@@ -3,215 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exame de Compreensão Auditiva</title>
+    <title>Exposição - Vídeo em Loop</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            background-color: #000;
+            overflow: hidden;
         }
-        body {
-            background-color: #0f172a;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
+
+        body, html {
+            width: 100%;
+            height: 100%;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
+        }
+
+        /* Vídeo ocupa a tela toda e esconde o ponteiro do mouse */
+        video {
+            width: 100vw;
             height: 100vh;
-            overflow: hidden;
-            user-select: none;
+            object-fit: contain; /* Use 'cover' se quiser preencher sem bordas pretas laterais */
+            cursor: none;
         }
-        .card {
-            text-align: center;
-            background: #1e293b;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            max-width: 800px;
-            width: 90%;
-        }
-        h1 {
-            margin-bottom: 20px;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .media-wrapper {
-            position: relative;
-            width: 100%;
-            margin-top: 20px;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .overlay-blocker {
+
+        /* Camada para iniciar em tela cheia na primeira interação (se necessário) */
+        #start-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 999;
-            background: transparent;
-            cursor: default;
+            background: #000;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            cursor: pointer;
+            font-family: sans-serif;
         }
-        video {
-            width: 100%;
-            min-height: 250px;
-            max-height: 400px;
-            display: block;
-            outline: none;
-        }
-        .btn-start {
+
+        #start-overlay button {
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
             background-color: #2563eb;
             color: white;
-            border: none;
-            padding: 16px 32px;
-            font-size: 18px;
             font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-start:hover {
-            background-color: #1d4ed8;
-        }
-        .status {
-            margin-top: 15px;
-            font-size: 16px;
-            color: #94a3b8;
-        }
-        .alerta-bloqueio {
-            color: #f87171 !important;
-            font-weight: bold;
-            font-size: 18px !important;
         }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body>
 
-    <div class="card">
-        <!-- Clicar 5 vezes no título abre o menu do aplicador -->
-        <h1 id="tituloProva" onclick="resetAplicador()">Exame de Compreensão Auditiva - CILPINHO A1</h1>
-
-        <button id="startBtn" class="btn-start" onclick="iniciarProva()">Iniciar Prova</button>
-
-        <div id="mediaContainer" style="display: none;">
-            <div class="media-wrapper">
-                <div class="overlay-blocker"></div>
-                
-                <video id="playerMidia" preload="auto">
-                    <source src="neymar.mp4" type="video/mp4">
-                    O seu navegador não suporta este formato de mídia.
-                </video>
-            </div>
-            <p class="status" id="statusTxt">A mídia está em execução. Não é possível pausar nem voltar.</p>
-        </div>
-
-        <p class="status" id="mensagemBloqueio" style="display: none;"></p>
+    <!-- Overlay de acionamento inicial -->
+    <div id="start-overlay" onclick="iniciarExposicao()">
+        <button>Iniciar Exposição em Tela Cheia</button>
     </div>
 
+    <!-- Player sem controles e com a propriedade loop -->
+    <video id="videoPlayer" loop playsinline preload="auto">
+        <source src="neymar.mp4" type="video/mp4">
+        Navegador incompatível.
+    </video>
+
     <script>
-        const player = document.getElementById('playerMidia');
-        const startBtn = document.getElementById('startBtn');
-        const mediaContainer = document.getElementById('mediaContainer');
-        const statusTxt = document.getElementById('statusTxt');
-        const mensagemBloqueio = document.getElementById('mensagemBloqueio');
+        const player = document.getElementById('videoPlayer');
+        const overlay = document.getElementById('start-overlay');
 
-        // CHAVE ÚNICA DE SESSÃO
-        const CHAVE_PROVA = 'prova_cilpinho_a1_status';
-
-        // Verifica o estado ao carregar a página
-        window.addEventListener('DOMContentLoaded', () => {
-            const estado = localStorage.getItem(CHAVE_PROVA);
-            if (estado === 'iniciada' || estado === 'concluida') {
-                bloquearTelaPorRecarregamento();
+        function iniciarExposicao() {
+            // 1. Entra em Tela Cheia
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
             }
-        });
 
-        function bloquearTelaPorRecarregamento() {
-            startBtn.style.display = 'none';
-            mediaContainer.style.display = 'none';
-            mensagemBloqueio.style.display = 'block';
-            mensagemBloqueio.className = 'status alerta-bloqueio';
-            mensagemBloqueio.textContent = '⚠️ Esta prova já foi iniciada neste Chromebook. Chame o aplicador para liberar o dispositivo.';
+            // 2. Oculta o botão e toca o vídeo
+            overlay.style.display = 'none';
+            player.play();
         }
 
-        function iniciarProva() {
-            // Marca a prova como iniciada no navegador
-            localStorage.setItem(CHAVE_PROVA, 'iniciada');
-
-            startBtn.style.display = 'none';
-            mediaContainer.style.display = 'block';
-
-            player.load();
-            player.play().catch(error => {
-                alert("Erro ao carregar a mídia. Verifique com o aplicador.");
-                startBtn.style.display = 'inline-block';
+        // Tenta rodar automaticamente caso o Chromebook ligue direto em Quiosque
+        window.addEventListener('load', () => {
+            player.play().then(() => {
+                overlay.style.display = 'none';
+            }).catch(() => {
+                // Caso o navegador exija um clique para permitir áudio, mantém o botão visível
             });
-        }
-
-        // Se o vídeo for pausado, força a reprodução
-        player.addEventListener('pause', function() {
-            if (!player.ended) {
-                player.play();
-            }
         });
 
-        // BLOQUEIO DE TECLAS: Inclui F5, Ctrl+R, Cmd+R
-        window.addEventListener('keydown', function(event) {
-            // Atalhos de recarregar e navegação
-            if (
-                event.key === 'F5' || 
-                (event.ctrlKey && event.key === 'r') || 
-                (event.ctrlKey && event.key === 'R') ||
-                (event.metaKey && event.key === 'r')
-            ) {
-                event.preventDefault();
-                event.stopPropagation();
-                return false;
-            }
-
-            // Atalhos de player de mídia
-            const teclasBloqueadas = [
-                'Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-                'KeyK', 'KeyJ', 'KeyL', 'Tab', 'MediaPlayPause', 'MediaTrackNext', 'MediaTrackPrevious'
-            ];
-            if (teclasBloqueadas.includes(event.code) || event.keyCode === 32) {
-                event.preventDefault();
-                event.stopPropagation();
-                return false;
-            }
-        }, true);
-
-        // Mensagem de confirmação se o aluno tentar fechar/recarregar a aba
-        window.onbeforeunload = function() {
-            if (localStorage.getItem(CHAVE_PROVA) === 'iniciada') {
-                return "A prova está em andamento. Deseja realmente sair?";
-            }
-        };
-
-        // Quando o vídeo termina
+        // Reforço via código para garantir o Loop sem interrupções
         player.onended = function() {
-            localStorage.setItem(CHAVE_PROVA, 'concluida');
-            statusTxt.textContent = "A reprodução foi concluída. Aguarde as orientações do aplicador.";
-            statusTxt.style.color = "#4ade80";
+            player.currentTime = 0;
+            player.play();
         };
 
-        // --- RECURSO EXCLUSIVO DO APLICADOR ---
-        let cliquesTitulo = 0;
-        function resetAplicador() {
-            cliquesTitulo++;
-            if (cliquesTitulo >= 5) {
-                const senha = prompt("ÁREA DO APLICADOR: Digite a senha para liberar esta prova para o próximo aluno:");
-                if (senha === "1234") { // Altere esta senha para a sua preferência
-                    localStorage.removeItem(CHAVE_PROVA);
-                    alert("Prova resetada com sucesso!");
-                    location.reload();
-                } else if (senha !== null) {
-                    alert("Senha incorreta.");
-                }
-                cliquesTitulo = 0;
-            }
-        }
+        // Bloqueia menu de botão direito do mouse
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        // Bloqueia teclas de pausa (Espaço, K), controle de mídia e atalhos
+        document.addEventListener('keydown', e => {
+            e.preventDefault();
+            return false;
+        });
+
+        // Impede que o clique no vídeo altere o estado (play/pause)
+        player.addEventListener('click', e => e.preventDefault());
     </script>
 </body>
 </html>
