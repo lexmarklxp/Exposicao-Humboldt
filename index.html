@@ -21,22 +21,21 @@
             justify-content: center;
         }
 
-        /* O iframe ocupa toda a tela e desativa a interação do ponteiro do mouse no YouTube */
+        /* Removido o 'pointer-events: none' para permitir interação caso necessário */
         iframe {
             width: 100vw;
             height: 100vh;
             border: none;
-            pointer-events: none;
         }
 
-        /* Camada inicial para colocar em tela cheia se necessário */
+        /* Overlay transparente apenas para acionar tela cheia ao clicar */
         #start-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #000;
+            background: rgba(0, 0, 0, 0.4);
             color: #fff;
             display: flex;
             align-items: center;
@@ -47,31 +46,31 @@
         }
 
         #start-overlay button {
-            padding: 16px 32px;
-            font-size: 1.2rem;
+            padding: 20px 40px;
+            font-size: 1.4rem;
             border: none;
             border-radius: 8px;
             background-color: #2563eb;
             color: white;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 <body>
 
-    <!-- Overlay de acionamento inicial -->
+    <!-- Botão de acionamento de tela cheia -->
     <div id="start-overlay" onclick="iniciarExposicao()">
-        <button>Iniciar Exposição</button>
+        <button>Clique para Iniciar a Exposição em Tela Cheia</button>
     </div>
 
-    <!-- Player do seu vídeo no YouTube (ID: VUekWwNjqRY) em Loop e sem controles -->
+    <!-- mute=1 garante o autoplay direto; mute=0 exige clique prévio -->
     <iframe 
         id="ytPlayer"
-        src="https://www.youtube-nocookie.com/embed/VUekWwNjqRY?autoplay=1&controls=0&loop=1&playlist=VUekWwNjqRY&rel=0&modestbranding=1&enablejsapi=1&origin=https://lexmarklxp.github.io" 
+        src="https://www.youtube-nocookie.com/embed/VUekWwNjqRY?autoplay=1&mute=1&controls=0&loop=1&playlist=VUekWwNjqRY&rel=0&modestbranding=1" 
         allow="autoplay; encrypted-media; fullscreen"
-        referrerpolicy="strict-origin-when-cross-origin"
-        style="width: 100vw; height: 100vh; border: none; pointer-events: none;">
+        referrerpolicy="strict-origin-when-cross-origin">
     </iframe>
 
     <script>
@@ -83,18 +82,12 @@
                 document.documentElement.webkitRequestFullscreen();
             }
 
-            // Esconde a tela cinza/preta inicial
+            // Oculta a camada do botão
             document.getElementById('start-overlay').style.display = 'none';
         }
 
-        // Bloqueia menu do botão direito do mouse
+        // Bloqueia o menu do botão direito
         document.addEventListener('contextmenu', e => e.preventDefault());
-
-        // Bloqueia teclas de barra de espaço, setas e atalhos de navegação
-        document.addEventListener('keydown', e => {
-            e.preventDefault();
-            return false;
-        });
     </script>
 </body>
 </html>
