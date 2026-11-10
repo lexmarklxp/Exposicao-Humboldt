@@ -21,15 +21,15 @@
             justify-content: center;
         }
 
-        /* Vídeo ocupa a tela toda e esconde o ponteiro do mouse */
-        video {
+        /* O iframe ocupa toda a tela e desativa a interação do ponteiro do mouse no YouTube */
+        iframe {
             width: 100vw;
             height: 100vh;
-            object-fit: contain; /* Use 'cover' se quiser preencher sem bordas pretas laterais */
-            cursor: none;
+            border: none;
+            pointer-events: none;
         }
 
-        /* Camada para iniciar em tela cheia na primeira interação (se necessário) */
+        /* Camada inicial para colocar em tela cheia se necessário */
         #start-overlay {
             position: absolute;
             top: 0;
@@ -49,12 +49,12 @@
         #start-overlay button {
             padding: 16px 32px;
             font-size: 1.2rem;
-            cursor: pointer;
             border: none;
             border-radius: 8px;
             background-color: #2563eb;
             color: white;
             font-weight: bold;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -62,58 +62,37 @@
 
     <!-- Overlay de acionamento inicial -->
     <div id="start-overlay" onclick="iniciarExposicao()">
-        <button>Iniciar Exposição em Tela Cheia</button>
+        <button>Iniciar Exposição</button>
     </div>
 
-    <!-- Player sem controles e com a propriedade loop -->
-    <video id="videoPlayer" loop playsinline preload="auto">
-        <source src="ricardo.mp4" type="video/mp4">
-        Navegador incompatível.
-    </video>
+    <!-- Player do seu vídeo no YouTube (ID: VUekWwNjqRY) em Loop e sem controles -->
+    <iframe 
+        id="ytPlayer"
+        src="https://www.youtube.com/embed/VUekWwNjqRY?autoplay=1&controls=0&loop=1&playlist=VUekWwNjqRY&rel=0&modestbranding=1&playsinline=1" 
+        allow="autoplay; encrypted-media">
+    </iframe>
 
     <script>
-        const player = document.getElementById('videoPlayer');
-        const overlay = document.getElementById('start-overlay');
-
         function iniciarExposicao() {
-            // 1. Entra em Tela Cheia
+            // Força o modo de tela cheia no navegador
             if (document.documentElement.requestFullscreen) {
                 document.documentElement.requestFullscreen();
             } else if (document.documentElement.webkitRequestFullscreen) {
                 document.documentElement.webkitRequestFullscreen();
             }
 
-            // 2. Oculta o botão e toca o vídeo
-            overlay.style.display = 'none';
-            player.play();
+            // Esconde a tela cinza/preta inicial
+            document.getElementById('start-overlay').style.display = 'none';
         }
 
-        // Tenta rodar automaticamente caso o Chromebook ligue direto em Quiosque
-        window.addEventListener('load', () => {
-            player.play().then(() => {
-                overlay.style.display = 'none';
-            }).catch(() => {
-                // Caso o navegador exija um clique para permitir áudio, mantém o botão visível
-            });
-        });
-
-        // Reforço via código para garantir o Loop sem interrupções
-        player.onended = function() {
-            player.currentTime = 0;
-            player.play();
-        };
-
-        // Bloqueia menu de botão direito do mouse
+        // Bloqueia menu do botão direito do mouse
         document.addEventListener('contextmenu', e => e.preventDefault());
 
-        // Bloqueia teclas de pausa (Espaço, K), controle de mídia e atalhos
+        // Bloqueia teclas de barra de espaço, setas e atalhos de navegação
         document.addEventListener('keydown', e => {
             e.preventDefault();
             return false;
         });
-
-        // Impede que o clique no vídeo altere o estado (play/pause)
-        player.addEventListener('click', e => e.preventDefault());
     </script>
 </body>
 </html>
